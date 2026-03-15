@@ -502,6 +502,7 @@ function speakText(text) {
     return;
   }
   // Method 2: Web Speech API with Android WebView fix
+  function speakText(text) {
   if('speechSynthesis' in window){
     window.speechSynthesis.cancel();
     const trySpeak = () => {
