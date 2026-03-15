@@ -1,0 +1,593 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>تكلّم! – Speak English!</title>
+<!-- Android WebView microphone permission -->
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-JZNM12KM65"></script>
+<script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','G-JZNM12KM65');</script>
+<link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Tajawal:wght@700;900&display=swap" rel="stylesheet">
+<script src="https://code.responsivevoice.org/responsivevoice.js?key=FREE"></script>
+<style>
+:root{--sky:#1ec8e0;--yellow:#FFD93D;--pink:#FF6B9D;--green:#6BCB77;--orange:#FF9A3C;--purple:#A66CFF;--bg:#FFF9F0;--dark:#2d2d44;}
+body.adult-mode{--bg:#f0f4ff;--sky:#3b5bdb;--yellow:#ffd43b;--green:#40c057;--orange:#fd7e14;--pink:#e64980;--purple:#7950f2;}
+/* Mode toggle */
+.mode-toggle{display:flex;background:rgba(255,255,255,0.25);border-radius:20px;padding:4px;gap:4px;margin-bottom:0;}
+.mode-btn{flex:1;padding:6px 12px;border-radius:16px;border:none;font-family:'Tajawal',sans-serif;font-size:13px;font-weight:900;cursor:pointer;transition:all 0.2s;background:transparent;color:rgba(255,255,255,0.7);}
+.mode-btn.active{background:white;color:var(--dark);box-shadow:0 2px 8px rgba(0,0,0,0.15);}
+/* Adult category colors */
+body.adult-mode .cat-btn.active{border-color:var(--sky);background:var(--sky);}
+body.adult-mode .header{background:linear-gradient(135deg,#3b5bdb,#1c3faa);}
+body.adult-mode .stars-bar{border-right:4px solid var(--sky);}
+</style>
+*{margin:0;padding:0;box-sizing:border-box;}
+body{background:var(--bg);font-family:'Tajawal',sans-serif;min-height:100vh;overflow-x:hidden;padding-bottom:80px;}
+.stars-bg{position:fixed;inset:0;pointer-events:none;z-index:0;overflow:hidden;}
+.star{position:absolute;font-size:18px;animation:floatStar linear infinite;opacity:0.4;}
+@keyframes floatStar{0%{transform:translateY(100vh) rotate(0deg);opacity:0}10%{opacity:0.4}90%{opacity:0.4}100%{transform:translateY(-100px) rotate(360deg);opacity:0}}
+.container{max-width:440px;margin:0 auto;padding:14px 14px 20px;position:relative;z-index:1;}
+.header{background:linear-gradient(135deg,var(--sky),#0ea5c9);border-radius:24px;padding:16px 18px;margin-bottom:12px;display:flex;align-items:center;justify-content:space-between;box-shadow:0 6px 20px rgba(30,200,224,0.35);}
+.app-title{font-family:'Fredoka One',cursive;font-size:26px;color:white;direction:ltr;}
+.app-subtitle{font-size:12px;color:rgba(255,255,255,0.85);margin-top:2px;}
+.mascot{font-size:46px;animation:bounce 2s ease-in-out infinite;}
+@keyframes bounce{0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)}}
+.bottom-nav{position:fixed;bottom:0;left:0;right:0;background:white;border-top:2px solid #f0f0f0;display:flex;justify-content:space-around;padding:8px 0 10px;z-index:100;box-shadow:0 -4px 20px rgba(0,0,0,0.08);}
+.nav-btn{display:flex;flex-direction:column;align-items:center;gap:3px;padding:4px 12px;border:none;background:none;cursor:pointer;font-family:'Tajawal',sans-serif;font-size:10px;color:#aaa;transition:all 0.2s;border-radius:12px;}
+.nav-btn.active{color:var(--sky);}
+.nav-btn .nav-icon{font-size:22px;}
+.nav-btn.active .nav-icon{transform:scale(1.15);}
+.page{display:none;}.page.active{display:block;}
+.stars-bar{background:white;border-radius:18px;padding:10px 16px;margin-bottom:12px;display:flex;align-items:center;justify-content:space-between;box-shadow:0 3px 12px rgba(0,0,0,0.07);}
+.stars-count{font-family:'Fredoka One',cursive;font-size:20px;color:var(--orange);direction:ltr;}
+.stars-label{font-size:12px;color:#888;}
+.streak-badge{background:linear-gradient(135deg,var(--orange),#e67e22);color:white;padding:5px 12px;border-radius:20px;font-size:12px;font-weight:700;}
+.level-row{display:flex;gap:8px;margin-bottom:12px;}
+.level-btn{flex:1;padding:11px 4px;border:3px solid transparent;border-radius:16px;font-family:'Tajawal',sans-serif;font-size:13px;font-weight:900;cursor:pointer;transition:all 0.2s;text-align:center;}
+.level-btn.easy{background:#e8faf0;color:var(--green);border-color:#c3f0d0;}
+.level-btn.medium{background:#fff8e6;color:var(--orange);border-color:#ffe4a3;}
+.level-btn.hard{background:#fde8f0;color:var(--pink);border-color:#f9c4d8;}
+.level-btn.active.easy{background:var(--green);color:white;border-color:var(--green);box-shadow:0 4px 14px rgba(107,203,119,0.4);transform:scale(1.05);}
+.level-btn.active.medium{background:var(--orange);color:white;border-color:var(--orange);box-shadow:0 4px 14px rgba(255,154,60,0.4);transform:scale(1.05);}
+.level-btn.active.hard{background:var(--pink);color:white;border-color:var(--pink);box-shadow:0 4px 14px rgba(255,107,157,0.4);transform:scale(1.05);}
+.cat-row{display:flex;gap:8px;margin-bottom:12px;overflow-x:auto;padding-bottom:4px;scrollbar-width:none;direction:rtl;}
+.cat-row::-webkit-scrollbar{display:none;}
+.cat-btn{flex-shrink:0;padding:7px 12px;border-radius:18px;font-family:'Tajawal',sans-serif;font-size:12px;font-weight:700;cursor:pointer;border:2.5px solid #e8e8e8;background:white;color:#888;transition:all 0.2s;white-space:nowrap;}
+.cat-btn.active{border-color:var(--sky);background:var(--sky);color:white;}
+.topic-card{border-radius:24px;padding:24px 20px 20px;margin-bottom:12px;min-height:180px;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;position:relative;overflow:hidden;box-shadow:0 8px 30px rgba(0,0,0,0.1);transition:all 0.3s;}
+.card-color-1{background:linear-gradient(135deg,#FFF3CD,#FFE082);}
+.card-color-2{background:linear-gradient(135deg,#D4EFFF,#ADE1FF);}
+.card-color-3{background:linear-gradient(135deg,#FFD6E8,#FFB3D1);}
+.card-color-4{background:linear-gradient(135deg,#D5F5E3,#A9DFBF);}
+.card-color-5{background:linear-gradient(135deg,#E8D5FF,#CBA3FF);}
+.topic-emoji{font-size:56px;margin-bottom:10px;animation:popIn 0.4s cubic-bezier(0.34,1.56,0.64,1);}
+@keyframes popIn{0%{transform:scale(0);opacity:0}100%{transform:scale(1);opacity:1}}
+.topic-ar-text{font-size:22px;font-weight:900;color:var(--dark);margin-bottom:6px;line-height:1.3;}
+.topic-en-text{font-family:'Fredoka One',cursive;font-size:18px;color:rgba(45,45,68,0.7);direction:ltr;}
+.placeholder-text{font-size:15px;color:#999;margin-top:10px;}
+.timer-card{background:white;border-radius:22px;padding:14px;margin-bottom:12px;box-shadow:0 4px 16px rgba(0,0,0,0.07);display:flex;align-items:center;justify-content:space-around;}
+.timer-circle{position:relative;width:86px;height:86px;}
+.timer-circle svg{transform:rotate(-90deg);}
+.arc-bg-k{fill:none;stroke:#f0f0f0;stroke-width:7;}
+.arc-fill-k{fill:none;stroke:var(--sky);stroke-width:7;stroke-linecap:round;stroke-dasharray:226;stroke-dashoffset:0;transition:stroke-dashoffset 1s linear,stroke 0.3s;}
+.arc-fill-k.warn{stroke:var(--pink);}
+.timer-inner{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-family:'Fredoka One',cursive;font-size:24px;color:var(--dark);direction:ltr;}
+.timer-inner.warn{color:var(--pink);animation:timerPulse 0.5s infinite alternate;}
+@keyframes timerPulse{from{transform:scale(1)}to{transform:scale(1.1)}}
+.timer-controls{display:flex;flex-direction:column;gap:7px;}
+.time-opt{padding:7px 14px;border-radius:12px;border:2.5px solid #e8e8e8;background:white;font-family:'Tajawal',sans-serif;font-size:12px;font-weight:700;color:#aaa;cursor:pointer;transition:all 0.2s;direction:ltr;}
+.time-opt.active{border-color:var(--sky);background:linear-gradient(135deg,var(--sky),#0ea5c9);color:white;}
+.btn-new{width:100%;padding:16px;border-radius:20px;border:none;background:linear-gradient(135deg,var(--yellow),#f5a623);color:var(--dark);font-family:'Tajawal',sans-serif;font-size:18px;font-weight:900;cursor:pointer;margin-bottom:10px;box-shadow:0 6px 20px rgba(255,217,61,0.45);transition:all 0.2s;display:flex;align-items:center;justify-content:center;gap:8px;}
+.btn-row-k{display:flex;gap:10px;margin-bottom:10px;}
+.btn-start-k{flex:2;padding:14px;border-radius:18px;border:none;background:linear-gradient(135deg,var(--green),#3daa4a);color:white;font-family:'Tajawal',sans-serif;font-size:16px;font-weight:900;cursor:pointer;box-shadow:0 5px 18px rgba(107,203,119,0.4);transition:all 0.2s;}
+.btn-start-k.running{background:linear-gradient(135deg,var(--pink),#e0507a);box-shadow:0 5px 18px rgba(255,107,157,0.4);}
+.btn-reset-k{flex:1;padding:14px;border-radius:18px;border:none;background:#f0f0f0;color:#888;font-family:'Tajawal',sans-serif;font-size:14px;font-weight:700;cursor:pointer;}
+.record-section{background:white;border-radius:22px;padding:16px;margin-bottom:12px;box-shadow:0 4px 16px rgba(0,0,0,0.07);}
+.record-title{font-size:14px;font-weight:900;color:var(--dark);margin-bottom:12px;text-align:center;}
+.record-btns{display:flex;gap:10px;justify-content:center;}
+.btn-record{flex:1;padding:14px;border-radius:18px;border:none;background:linear-gradient(135deg,var(--pink),#e0507a);color:white;font-family:'Tajawal',sans-serif;font-size:15px;font-weight:900;cursor:pointer;box-shadow:0 4px 14px rgba(255,107,157,0.35);transition:all 0.2s;display:flex;align-items:center;justify-content:center;gap:6px;}
+.btn-record.recording{background:linear-gradient(135deg,#e74c3c,#c0392b);animation:recordPulse 1s infinite alternate;}
+@keyframes recordPulse{from{box-shadow:0 4px 14px rgba(231,76,60,0.4)}to{box-shadow:0 4px 28px rgba(231,76,60,0.8)}}
+.btn-play{flex:1;padding:14px;border-radius:18px;border:none;background:linear-gradient(135deg,var(--purple),#8b5cf6);color:white;font-family:'Tajawal',sans-serif;font-size:15px;font-weight:900;cursor:pointer;box-shadow:0 4px 14px rgba(166,108,255,0.35);transition:all 0.2s;display:flex;align-items:center;justify-content:center;gap:6px;}
+.btn-play:disabled{opacity:0.4;cursor:not-allowed;}
+.record-status{text-align:center;font-size:12px;color:#888;margin-top:8px;min-height:18px;}
+.record-wave{display:flex;align-items:center;justify-content:center;gap:3px;margin:8px 0;height:30px;}
+.wave-bar{width:4px;background:var(--pink);border-radius:4px;animation:waveAnim 0.8s ease-in-out infinite alternate;}
+.wave-bar:nth-child(2){animation-delay:0.1s}.wave-bar:nth-child(3){animation-delay:0.2s}.wave-bar:nth-child(4){animation-delay:0.3s}.wave-bar:nth-child(5){animation-delay:0.4s}
+@keyframes waveAnim{from{height:6px}to{height:24px}}
+.celebration{display:none;text-align:center;background:linear-gradient(135deg,#FFF9C4,#FFE082);border-radius:20px;padding:16px;margin-bottom:10px;animation:celebPop 0.5s cubic-bezier(0.34,1.56,0.64,1);}
+@keyframes celebPop{0%{transform:scale(0.8);opacity:0}100%{transform:scale(1);opacity:1}}
+.celeb-emoji{font-size:36px;}.celeb-text{font-size:17px;font-weight:900;color:var(--dark);margin-top:5px;}.celeb-sub{font-size:12px;color:#888;margin-top:3px;font-family:'Fredoka One',cursive;direction:ltr;}
+.confetti-wrap{position:fixed;inset:0;pointer-events:none;z-index:999;display:none;}
+.confetti-piece{position:absolute;width:10px;height:10px;border-radius:2px;animation:confettiFall 1.5s ease-in forwards;}
+@keyframes confettiFall{0%{transform:translateY(-20px) rotate(0deg);opacity:1}100%{transform:translateY(100vh) rotate(720deg);opacity:0}}
+.word-card{background:linear-gradient(135deg,var(--purple),#8b5cf6);border-radius:20px;padding:14px 16px;color:white;display:flex;align-items:center;gap:12px;box-shadow:0 5px 18px rgba(166,108,255,0.35);margin-bottom:12px;}
+.word-icon{font-size:32px;flex-shrink:0;}.word-en{font-family:'Fredoka One',cursive;font-size:18px;direction:ltr;}.word-ar{font-size:13px;opacity:0.85;margin-top:2px;}.word-label{font-size:10px;opacity:0.7;margin-bottom:2px;direction:ltr;font-family:'Fredoka One',cursive;}
+.speak-btn{background:rgba(255,255,255,0.2);border:none;border-radius:10px;color:white;padding:4px 10px;font-size:16px;cursor:pointer;margin-top:4px;}
+.section-title{font-size:20px;font-weight:900;color:var(--dark);margin-bottom:14px;text-align:center;}
+.letters-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:16px;}
+.letter-card{background:white;border-radius:16px;padding:12px 6px;text-align:center;cursor:pointer;box-shadow:0 3px 12px rgba(0,0,0,0.08);transition:all 0.2s;border:2.5px solid transparent;}
+.letter-card:hover,.letter-card.active{transform:scale(1.05);border-color:var(--sky);}
+.letter-big{font-family:'Fredoka One',cursive;font-size:30px;color:var(--sky);line-height:1;}
+.letter-small{font-size:10px;color:#888;margin-top:2px;}
+.letter-detail{background:white;border-radius:22px;padding:20px;margin-bottom:14px;box-shadow:0 4px 16px rgba(0,0,0,0.08);display:none;text-align:center;}
+.letter-detail.show{display:block;animation:popIn 0.3s ease-out;}
+.detail-letter{font-family:'Fredoka One',cursive;font-size:72px;color:var(--sky);line-height:1;}
+.detail-sound{font-size:16px;color:#888;margin:6px 0;direction:ltr;}
+.detail-words{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin-top:12px;}
+.word-pill{background:linear-gradient(135deg,var(--yellow),#f5a623);color:var(--dark);padding:8px 14px;border-radius:20px;font-family:'Fredoka One',cursive;font-size:16px;direction:ltr;cursor:pointer;transition:all 0.2s;}
+.word-pill:hover{transform:scale(1.05);}
+.word-ar-small{font-size:11px;color:#888;margin-top:3px;}
+.animals-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:14px;}
+.animal-card{background:white;border-radius:18px;padding:14px 8px;text-align:center;cursor:pointer;box-shadow:0 3px 12px rgba(0,0,0,0.08);transition:all 0.2s;}
+.animal-card:hover{transform:scale(1.05);box-shadow:0 6px 20px rgba(0,0,0,0.12);}
+.animal-emoji-big{font-size:44px;}
+.animal-name-en{font-family:'Fredoka One',cursive;font-size:14px;color:var(--dark);margin-top:6px;direction:ltr;}
+.animal-name-ar{font-size:11px;color:#888;margin-top:2px;}
+.animal-sound-btn{margin-top:6px;background:var(--sky);color:white;border:none;border-radius:10px;padding:4px 10px;font-size:11px;cursor:pointer;font-family:'Tajawal',sans-serif;}
+.dmn-tabs{display:flex;gap:8px;margin-bottom:14px;}
+.dmn-tab{flex:1;padding:10px;border-radius:14px;border:2.5px solid #e8e8e8;background:white;font-family:'Tajawal',sans-serif;font-size:13px;font-weight:700;color:#888;cursor:pointer;text-align:center;transition:all 0.2s;}
+.dmn-tab.active{background:var(--purple);border-color:var(--purple);color:white;}
+.dmn-list{display:flex;flex-direction:column;gap:8px;margin-bottom:14px;}
+.dmn-item{background:white;border-radius:16px;padding:12px 16px;display:flex;align-items:center;gap:14px;box-shadow:0 3px 10px rgba(0,0,0,0.06);cursor:pointer;transition:all 0.2s;}
+.dmn-item:hover{transform:translateX(-4px);}
+.dmn-num{font-family:'Fredoka One',cursive;font-size:22px;color:var(--purple);min-width:36px;text-align:center;direction:ltr;}
+.dmn-en{font-family:'Fredoka One',cursive;font-size:18px;color:var(--dark);direction:ltr;}
+.dmn-ar{font-size:13px;color:#888;margin-top:2px;}
+.dmn-emoji{font-size:24px;margin-right:auto;margin-left:0;}
+.numbers-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;}
+.num-card{background:white;border-radius:16px;padding:14px 8px;text-align:center;box-shadow:0 3px 10px rgba(0,0,0,0.07);cursor:pointer;transition:all 0.2s;}
+.num-card:hover{transform:scale(1.05);}
+.num-big{font-family:'Fredoka One',cursive;font-size:28px;color:var(--purple);}
+.num-word{font-family:'Fredoka One',cursive;font-size:11px;color:var(--dark);margin-top:4px;direction:ltr;}
+.num-ar{font-size:10px;color:#888;margin-top:2px;}
+</style>
+</head>
+<body>
+<div class="stars-bg" id="starsBg"></div>
+<div class="confetti-wrap" id="confettiWrap"></div>
+<div class="container">
+  <div class="header">
+    <div>
+      <div class="app-title">🎤 Takallam!</div>
+      <div class="app-subtitle" id="appSubtitle">تكلّم إنجليزي مع الأطفال</div>
+      <div class="mode-toggle" style="margin-top:8px">
+        <button class="mode-btn active" id="kidsBtn" onclick="setMode('kids',this)">👦 أطفال</button>
+        <button class="mode-btn" id="adultsBtn" onclick="setMode('adults',this)">👨 بالغون</button>
+      </div>
+    </div>
+    <div class="mascot" id="mascot">🦜</div>
+  </div>
+
+  <!-- SPEAK PAGE -->
+  <div class="page active" id="page-speak">
+    <div class="stars-bar">
+      <div><div class="stars-label">نجومي ⭐</div><div class="stars-count" id="starsCount">0 ⭐</div></div>
+      <div style="text-align:center"><div class="stars-label">جلسات اليوم</div><div class="stars-count" id="sessionsToday">0 🎤</div></div>
+      <div class="streak-badge">🔥 0 يوم</div>
+    </div>
+    <div class="level-row">
+      <button class="level-btn easy active" onclick="setLevel('easy',this)">🟢 سهل</button>
+      <button class="level-btn medium" onclick="setLevel('medium',this)">🟡 متوسط</button>
+      <button class="level-btn hard" onclick="setLevel('hard',this)">🔴 صعب</button>
+    </div>
+    <div class="cat-row" id="catRow">
+      <div class="cat-btn active" data-cat="all" onclick="setCat('all',this)">🌟 الكل</div>
+      <div class="cat-btn" data-cat="animals" onclick="setCat('animals',this)">🐾 حيوانات</div>
+      <div class="cat-btn" data-cat="family" onclick="setCat('family',this)">👨‍👩‍👧 عائلة</div>
+      <div class="cat-btn" data-cat="school" onclick="setCat('school',this)">🏫 مدرسة</div>
+      <div class="cat-btn" data-cat="food" onclick="setCat('food',this)">🍕 أكل</div>
+      <div class="cat-btn" data-cat="nature" onclick="setCat('nature',this)">🌿 طبيعة</div>
+    </div>
+    <div class="topic-card card-color-1" id="topicCard">
+      <div id="placeholder"><div style="font-size:52px">👆</div><div class="placeholder-text">اضغط على "موضوع جديد"!</div></div>
+      <div id="topicContent" style="display:none;width:100%">
+        <div class="topic-emoji" id="topicEmoji"></div>
+        <div class="topic-ar-text" id="topicAr"></div>
+        <div class="topic-en-text" id="topicEn"></div>
+      </div>
+    </div>
+    <div class="timer-card">
+      <div class="timer-circle">
+        <svg width="86" height="86" viewBox="0 0 86 86">
+          <circle class="arc-bg-k" cx="43" cy="43" r="36"/>
+          <circle class="arc-fill-k" id="arcFillK" cx="43" cy="43" r="36"/>
+        </svg>
+        <div class="timer-inner" id="timerDisplay">0:30</div>
+      </div>
+      <div class="timer-controls">
+        <button class="time-opt active" onclick="setTime(30,this)">⏱ 30 ثانية</button>
+        <button class="time-opt" onclick="setTime(60,this)">⏱ دقيقة</button>
+        <button class="time-opt" onclick="setTime(90,this)">⏱ دقيقة ونص</button>
+      </div>
+    </div>
+    <button class="btn-new" onclick="newTopic()">🎲 موضوع جديد!</button>
+    <div class="btn-row-k">
+      <button class="btn-start-k" id="startBtn" onclick="toggleTimer()">▶ ابدأ الكلام!</button>
+      <button class="btn-reset-k" onclick="resetTimer()">↺ من جديد</button>
+    </div>
+    <div class="record-section">
+      <div class="record-title">🎤 سجّل صوتك واسمعه!</div>
+      <div class="record-wave" id="recordWave" style="display:none">
+        <div class="wave-bar"></div><div class="wave-bar"></div><div class="wave-bar"></div><div class="wave-bar"></div><div class="wave-bar"></div>
+      </div>
+      <div class="record-btns">
+        <button class="btn-record" id="recordBtn" onclick="handleRecordBtn()" style="flex:1">🎙️ اضغط للتسجيل</button>
+      </div>
+      <div class="record-status" id="recordStatus">اضغط الزر وتكلّم بالإنجليزي!</div>
+    </div>
+    <div class="celebration" id="celebration">
+      <div class="celeb-emoji">🎉🌟🎊</div>
+      <div class="celeb-text">رائع! تكلّمت بالإنجليزي! 🥳</div>
+      <div class="celeb-sub">Amazing job! Keep going!</div>
+    </div>
+    <div class="word-card" onclick="speakText(document.getElementById('wotdEn').textContent)">
+      <div class="word-icon" id="wotdEmoji">💡</div>
+      <div>
+        <div class="word-label">Word of the Day 🔊 اضغط للسماع</div>
+        <div class="word-en" id="wotdEn">Wonderful</div>
+        <div class="word-ar" id="wotdAr">رائع</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- LETTERS PAGE -->
+  <div class="page" id="page-letters">
+    <div class="section-title">🔤 الحروف الإنجليزية</div>
+    <div class="letter-detail" id="letterDetail">
+      <div class="detail-letter" id="detailLetter">A</div>
+      <div class="detail-sound" id="detailSound">Sound: /æ/</div>
+      <button onclick="speakText(document.getElementById('detailLetter').textContent)" style="background:var(--sky);border:none;border-radius:12px;color:white;padding:8px 18px;font-size:14px;cursor:pointer;margin-bottom:10px;">🔊 استمع للحرف</button>
+      <div class="detail-words" id="detailWords"></div>
+    </div>
+    <div class="letters-grid" id="lettersGrid"></div>
+  </div>
+
+  <!-- ANIMALS PAGE -->
+  <div class="page" id="page-animals">
+    <div class="section-title">🐾 الحيوانات بالإنجليزي</div>
+    <div class="animals-grid" id="animalsGrid"></div>
+  </div>
+
+  <!-- DAYS/MONTHS/NUMBERS PAGE -->
+  <div class="page" id="page-dmn">
+    <div class="section-title">📅 أيام، أشهر، أرقام</div>
+    <div class="dmn-tabs">
+      <button class="dmn-tab active" onclick="setDmnTab('days',this)">📅 الأيام</button>
+      <button class="dmn-tab" onclick="setDmnTab('months',this)">🗓️ الأشهر</button>
+      <button class="dmn-tab" onclick="setDmnTab('numbers',this)">🔢 الأرقام</button>
+    </div>
+    <div id="dmnContent"></div>
+  </div>
+</div>
+
+<div class="bottom-nav">
+  <button class="nav-btn active" onclick="showPage('speak',this)"><span class="nav-icon">🎤</span>تكلّم</button>
+  <button class="nav-btn" onclick="showPage('letters',this)"><span class="nav-icon">🔤</span>حروف</button>
+  <button class="nav-btn" onclick="showPage('animals',this)"><span class="nav-icon">🐾</span>حيوانات</button>
+  <button class="nav-btn" onclick="showPage('dmn',this)"><span class="nav-icon">📅</span>أيام</button>
+</div>
+
+<script>
+const topics={
+all:{
+easy:[
+{ar:"حيوانك المفضل",en:"My favourite animal",emoji:"🐶",color:1},
+{ar:"لونك المفضل",en:"My favourite colour",emoji:"🌈",color:2},
+{ar:"طعامك المفضل",en:"My favourite food",emoji:"🍕",color:3},
+{ar:"صِف بيتك",en:"Describe your house",emoji:"🏠",color:4},
+{ar:"صديقك المفضل",en:"Your best friend",emoji:"👫",color:5},
+{ar:"هوايتك المفضلة",en:"Your favourite hobby",emoji:"🎨",color:1},
+{ar:"فصلك المفضل",en:"Your favourite season",emoji:"🌸",color:2},
+{ar:"صِف غرفتك",en:"Describe your bedroom",emoji:"🛏️",color:3},
+{ar:"ما تحب تلعب؟",en:"What do you like to play?",emoji:"⚽",color:4},
+{ar:"موسيقاك المفضلة",en:"Your favourite music",emoji:"🎵",color:5},
+],
+medium:[
+{ar:"لو كنت حيواناً، أي حيوان تكون؟",en:"If you were an animal, which would you be?",emoji:"🦁",color:1},
+{ar:"لو كان عندك قدرة خارقة!",en:"If you had a superpower!",emoji:"🦸",color:2},
+{ar:"ماذا تريد أن تصبح في المستقبل؟",en:"What do you want to be in the future?",emoji:"🚀",color:3},
+{ar:"لو كان عندك مليون درهم!",en:"If you had a million dollars!",emoji:"💰",color:4},
+{ar:"صِف مدينة المستقبل",en:"Describe the city of the future",emoji:"🏙️",color:5},
+{ar:"لو تستطيع السفر في الزمن",en:"If you could travel through time",emoji:"⏰",color:1},
+{ar:"لو كنت معلماً لليوم",en:"If you were a teacher for a day",emoji:"👩‍🏫",color:2},
+{ar:"هل تفضل الصيف أم الشتاء؟",en:"Do you prefer summer or winter?",emoji:"☀️",color:3},
+{ar:"صِف بطلك المفضل",en:"Describe your favourite hero",emoji:"🦸",color:4},
+{ar:"ماذا ستفعل لو وجدت كنزاً؟",en:"What would you do if you found treasure?",emoji:"💎",color:5},
+],
+hard:[
+{ar:"لماذا نحمي البيئة؟",en:"Why should we protect the environment?",emoji:"🌍",color:1},
+{ar:"ما هي أهمية الصداقة؟",en:"What is the importance of friendship?",emoji:"🤝",color:2},
+{ar:"لماذا نذهب إلى المدرسة؟",en:"Why do we go to school?",emoji:"🏫",color:3},
+{ar:"كيف نجعل العالم مكاناً أفضل؟",en:"How can we make the world a better place?",emoji:"🌈",color:4},
+{ar:"هل التكنولوجيا مفيدة للأطفال؟",en:"Is technology good for children?",emoji:"📱",color:5},
+{ar:"ما معنى النجاح بالنسبة لك؟",en:"What does success mean to you?",emoji:"🏆",color:1},
+{ar:"كيف نتعامل مع الفشل؟",en:"How should we deal with failure?",emoji:"💪",color:2},
+{ar:"ما أهمية القراءة في حياتنا؟",en:"Why is reading important in our lives?",emoji:"📖",color:3},
+{ar:"كيف نتعامل مع التنمر؟",en:"How do we deal with bullying?",emoji:"🛡️",color:4},
+{ar:"لماذا يجب أن نساعد الآخرين؟",en:"Why should we help others?",emoji:"🤲",color:5},
+]
+},
+animals:{easy:[{ar:"حيوانك المفضل",en:"Your favourite animal",emoji:"🐶",color:1},{ar:"صِف قطة",en:"Describe a cat",emoji:"🐱",color:2},{ar:"صِف أسداً",en:"Describe a lion",emoji:"🦁",color:3},{ar:"صِف فراشة",en:"Describe a butterfly",emoji:"🦋",color:4},{ar:"صِف زرافة",en:"Describe a giraffe",emoji:"🦒",color:5},{ar:"حيوان تخاف منه",en:"An animal you are scared of",emoji:"🐍",color:1},{ar:"صِف حيوانك الأليف",en:"Describe your pet",emoji:"🐾",color:2},{ar:"ما الحيوان الأضخم؟",en:"What is the biggest animal?",emoji:"🐘",color:3},{ar:"صِف بطريقاً",en:"Describe a penguin",emoji:"🐧",color:4},{ar:"صِف نمراً",en:"Describe a tiger",emoji:"🐯",color:5}],medium:[{ar:"لماذا نحمي الحيوانات؟",en:"Why should we protect animals?",emoji:"🦋",color:1},{ar:"صِف حياة حيوان في الغابة",en:"Describe an animal life in the jungle",emoji:"🐒",color:2},{ar:"لو كنت حيواناً ماذا ستفعل؟",en:"If you were an animal what would you do?",emoji:"🦊",color:3},{ar:"قارن بين الأسد والنمر",en:"Compare a lion and a tiger",emoji:"🦁",color:4},{ar:"ما أذكى الحيوانات؟",en:"What are the smartest animals?",emoji:"🐬",color:5},{ar:"صِف رحلة سفاري",en:"Describe a safari trip",emoji:"🦓",color:1},{ar:"ما أهمية النحل للبيئة؟",en:"Why are bees important?",emoji:"🐝",color:2},{ar:"كيف تتواصل الحيوانات؟",en:"How do animals communicate?",emoji:"🔊",color:3},{ar:"ما الحيوانات الليلية؟",en:"What are nocturnal animals?",emoji:"🦉",color:4},{ar:"كيف تربي الحيوانات صغارها؟",en:"How do animals raise their young?",emoji:"🐻",color:5}],hard:[{ar:"ما تأثير الإنسان على الحيوانات؟",en:"How do humans affect the animal world?",emoji:"🌿",color:1},{ar:"لماذا بعض الحيوانات معرضة للانقراض؟",en:"Why are some animals endangered?",emoji:"🐼",color:2},{ar:"هل يجب إبقاء الحيوانات في حدائق الحيوان؟",en:"Should animals be kept in zoos?",emoji:"🦁",color:3},{ar:"كيف يؤثر تغير المناخ على الحيوانات؟",en:"How does climate change affect animals?",emoji:"🌡️",color:4},{ar:"هل الحيوانات لها حقوق؟",en:"Do animals have rights?",emoji:"📜",color:5},{ar:"ما أهمية التنوع البيولوجي؟",en:"Why is biodiversity important?",emoji:"🌍",color:1},{ar:"ما أهمية الشعب المرجانية؟",en:"Why are coral reefs important?",emoji:"🪸",color:2},{ar:"كيف تؤثر الملوثات على البحار؟",en:"How do pollutants affect the oceans?",emoji:"🌊",color:3},{ar:"ما دور المحميات الطبيعية؟",en:"What is the role of nature reserves?",emoji:"🏞️",color:4},{ar:"هل يمكن استعادة الأنواع المنقرضة؟",en:"Can extinct species be brought back?",emoji:"🧬",color:5}]},
+family:{easy:[{ar:"صِف عائلتك",en:"Describe your family",emoji:"👨‍👩‍👧‍👦",color:1},{ar:"من هو أقرب شخص إليك؟",en:"Who is the closest person to you?",emoji:"💞",color:2},{ar:"صِف بيت جدك",en:"Describe your grandparent house",emoji:"🏡",color:3},{ar:"صِف يوماً ممتعاً مع عائلتك",en:"Describe a fun day with your family",emoji:"🎉",color:4},{ar:"كيف تساعد عائلتك؟",en:"How do you help your family?",emoji:"🧹",color:5},{ar:"ما الهوايات المشتركة في عائلتك؟",en:"What hobbies does your family share?",emoji:"🎨",color:1},{ar:"صِف يوم العيد مع العائلة",en:"Describe Eid with the family",emoji:"🎊",color:2},{ar:"ما الذكريات الجميلة مع عائلتك؟",en:"What are your happy memories with your family?",emoji:"📸",color:3},{ar:"صِف أخاك أو أختك",en:"Describe your brother or sister",emoji:"👦",color:4},{ar:"من الأكبر في عائلتك؟",en:"Who is the oldest in your family?",emoji:"👴",color:5}],medium:[{ar:"ما أهمية العائلة في حياتنا؟",en:"Why is family important in our lives?",emoji:"💞",color:1},{ar:"كيف تحل خلافاً في العائلة؟",en:"How do you resolve a family disagreement?",emoji:"🤝",color:2},{ar:"ما تأثير التكنولوجيا على العائلة؟",en:"How does technology affect the family?",emoji:"📱",color:3},{ar:"ما دور الأجداد في التربية؟",en:"What role do grandparents play in raising children?",emoji:"👴",color:4},{ar:"ما أهمية التقاليد الأسرية؟",en:"Why are family traditions important?",emoji:"🎭",color:5},{ar:"كيف تدعم عائلتك أحلامك؟",en:"How does your family support your dreams?",emoji:"🌟",color:1},{ar:"ما أهمية الحوار في العائلة؟",en:"Why is communication important in the family?",emoji:"💬",color:2},{ar:"كيف تختلف العائلة الحديثة؟",en:"How is the modern family different?",emoji:"🔄",color:3},{ar:"ما أهمية قضاء الوقت مع العائلة؟",en:"Why is spending time with family important?",emoji:"⏰",color:4},{ar:"كيف تحتفل عائلتك بالمناسبات؟",en:"How does your family celebrate occasions?",emoji:"🎂",color:5}],hard:[{ar:"كيف تحل خلافاً مع أخيك؟",en:"How do you resolve a conflict with a sibling?",emoji:"🤝",color:1},{ar:"كيف تغيرت بنية العائلة؟",en:"How has family structure changed?",emoji:"🔄",color:2},{ar:"ما تأثير الهجرة على الأسرة؟",en:"How does immigration affect family bonds?",emoji:"✈️",color:3},{ar:"ما دور المرأة في العائلة الحديثة؟",en:"What is the role of women in the modern family?",emoji:"👩",color:4},{ar:"كيف نوازن بين العمل والحياة الأسرية؟",en:"How do we balance work and family life?",emoji:"⚖️",color:5},{ar:"ما أهمية القيم في تربية الأطفال؟",en:"Why are values important in raising children?",emoji:"📜",color:1},{ar:"هل الأسرة الممتدة أم النووية أفضل؟",en:"Extended or nuclear family: which is better?",emoji:"🏠",color:2},{ar:"ما تحديات الآباء في العصر الرقمي؟",en:"What challenges do parents face in the digital age?",emoji:"💻",color:3},{ar:"ما مفهوم العائلة الناجحة؟",en:"What is the concept of a successful family?",emoji:"🌟",color:4},{ar:"كيف نحافظ على الهوية الثقافية في العائلة؟",en:"How do we preserve cultural identity in the family?",emoji:"🎭",color:5}]},
+school:{easy:[{ar:"مادتك المفضلة",en:"Your favourite school subject",emoji:"📐",color:1},{ar:"صِف أفضل معلم عندك",en:"Describe your best teacher",emoji:"👩‍🏫",color:2},{ar:"صِف حقيبتك المدرسية",en:"Describe your school bag",emoji:"🎒",color:3},{ar:"ما أجمل ذكرى في المدرسة؟",en:"What is your best memory at school?",emoji:"📸",color:4},{ar:"من هو أفضل صديق في الفصل؟",en:"Who is your best friend in class?",emoji:"👫",color:5},{ar:"صِف فصلك الدراسي",en:"Describe your classroom",emoji:"🏫",color:1},{ar:"ما الدرس الأكثر متعة؟",en:"What is the most enjoyable lesson?",emoji:"😄",color:2},{ar:"كيف تذهب إلى المدرسة؟",en:"How do you get to school?",emoji:"🚌",color:3},{ar:"صِف رحلتك المدرسية",en:"Describe your school trip",emoji:"🚌",color:4},{ar:"صِف يومك الأول في المدرسة",en:"Describe your first day at school",emoji:"🌟",color:5}],medium:[{ar:"صِف يومك في المدرسة",en:"Describe your school day",emoji:"🏫",color:1},{ar:"كيف تذاكر للامتحانات؟",en:"How do you study for exams?",emoji:"📝",color:2},{ar:"هل الواجبات المنزلية مفيدة؟",en:"Is homework useful?",emoji:"📚",color:3},{ar:"ما الذي تريد تغييره في مدرستك؟",en:"What would you change about your school?",emoji:"✏️",color:4},{ar:"ما أهمية الرياضة في المدرسة؟",en:"Why is sport important at school?",emoji:"⚽",color:5},{ar:"كيف تتعامل مع زميل صعب؟",en:"How do you deal with a difficult classmate?",emoji:"😤",color:1},{ar:"هل التعلم عن بُعد جيد؟",en:"Is online learning good?",emoji:"💻",color:2},{ar:"ما أهمية الفنون في المدرسة؟",en:"Why are arts important at school?",emoji:"🎨",color:3},{ar:"كيف تنظم وقتك بين الدراسة واللعب؟",en:"How do you balance study and play?",emoji:"⚖️",color:4},{ar:"ما دور المعلم المثالي؟",en:"What is the role of an ideal teacher?",emoji:"👩‍🏫",color:5}],hard:[{ar:"هل الامتحانات مفيدة؟",en:"Are exams useful?",emoji:"✏️",color:1},{ar:"كيف يمكن تحسين المدرسة؟",en:"How can schools be improved?",emoji:"💡",color:2},{ar:"تأثير التكنولوجيا على التعليم",en:"The impact of technology on education",emoji:"💻",color:3},{ar:"هل يجب إلغاء الواجبات المنزلية؟",en:"Should homework be abolished?",emoji:"📝",color:4},{ar:"ما تأثير الذكاء الاصطناعي على التعليم؟",en:"How will AI affect education?",emoji:"🤖",color:5},{ar:"كيف نحفز الطلاب على التعلم؟",en:"How do we motivate students to learn?",emoji:"🌟",color:1},{ar:"ما أهمية التفكير النقدي؟",en:"Why is critical thinking important?",emoji:"💭",color:2},{ar:"هل التعليم الخاص عادل؟",en:"Is private education fair?",emoji:"💰",color:3},{ar:"ما مستقبل التعليم الرقمي؟",en:"What is the future of digital education?",emoji:"🌐",color:4},{ar:"هل الجامعات لا تزال ضرورية؟",en:"Are universities still necessary?",emoji:"🎓",color:5}]},
+food:{easy:[{ar:"طعامك المفضل",en:"Your favourite food",emoji:"🍕",color:1},{ar:"فاكهتك المفضلة",en:"Your favourite fruit",emoji:"🍓",color:2},{ar:"وجبة الإفطار المثالية",en:"The perfect breakfast",emoji:"🥞",color:3},{ar:"طبق مغربي تحبه",en:"A Moroccan dish you love",emoji:"🥘",color:4},{ar:"ما الحلوى المفضلة لديك؟",en:"What is your favourite sweet?",emoji:"🍫",color:5},{ar:"صِف وجبة العيد",en:"Describe the Eid meal",emoji:"🎊",color:1},{ar:"ما المشروب المفضل لديك؟",en:"What is your favourite drink?",emoji:"🧃",color:2},{ar:"صِف مطعماً تحبه",en:"Describe a restaurant you like",emoji:"🍽️",color:3},{ar:"ما الطعام الذي لا تحبه؟",en:"What food do you dislike?",emoji:"😖",color:4},{ar:"كيف تحضّر السندويش؟",en:"How do you make a sandwich?",emoji:"🥪",color:5}],medium:[{ar:"هل الطبخ المنزلي أفضل من المطاعم؟",en:"Is home cooking better than restaurants?",emoji:"🏠",color:1},{ar:"ما العادات الغذائية الصحية؟",en:"What are healthy eating habits?",emoji:"🥦",color:2},{ar:"كيف تختلف وجبات رمضان؟",en:"How do meals differ in Ramadan?",emoji:"🌙",color:3},{ar:"ما أهمية الغذاء المتوازن؟",en:"Why is a balanced diet important?",emoji:"⚖️",color:4},{ar:"كيف نتجنب هدر الطعام؟",en:"How do we avoid food waste?",emoji:"♻️",color:5},{ar:"هل الصيام مفيد للصحة؟",en:"Is fasting good for health?",emoji:"🌙",color:1},{ar:"ما الطعام الذي يعطيك طاقة؟",en:"What food gives you energy?",emoji:"⚡",color:2},{ar:"ما أهمية الإفطار في الصباح؟",en:"Why is breakfast important?",emoji:"🌅",color:3},{ar:"كيف تؤثر ثقافتنا على طعامنا؟",en:"How does culture affect our food?",emoji:"🌍",color:4},{ar:"ما الطعام الذي يمثل بلدك؟",en:"What food represents your country?",emoji:"🗺️",color:5}],hard:[{ar:"هل الأكل الصحي مهم؟",en:"Is healthy food important?",emoji:"🥗",color:1},{ar:"الأمن الغذائي وتحدياته",en:"Food security and its challenges",emoji:"🌍",color:2},{ar:"هل الأغذية المعدّلة وراثياً آمنة؟",en:"Are genetically modified foods safe?",emoji:"🔬",color:3},{ar:"كيف نحل مشكلة الجوع في العالم؟",en:"How do we solve world hunger?",emoji:"🌾",color:4},{ar:"الأكل النباتي بين الصحة والبيئة",en:"Veganism: health and environment",emoji:"🌱",color:5},{ar:"هل الأغذية العضوية تستحق سعرها؟",en:"Are organic foods worth the price?",emoji:"💰",color:1},{ar:"ما سبب مشكلة السمنة في العالم؟",en:"What causes the obesity problem?",emoji:"⚠️",color:2},{ar:"كيف يؤثر تغير المناخ على الغذاء؟",en:"How does climate change affect food?",emoji:"🌡️",color:3},{ar:"ما مستقبل الغذاء مع التقنيات الحديثة؟",en:"What is the future of food with modern technology?",emoji:"🤖",color:4},{ar:"هل الصيام المتقطع فعّال؟",en:"Is intermittent fasting effective?",emoji:"⏰",color:5}]},
+nature:{easy:[{ar:"فصلك المفضل",en:"Your favourite season",emoji:"🍂",color:1},{ar:"صِف شجرة",en:"Describe a tree",emoji:"🌳",color:2},{ar:"صِف البحر",en:"Describe the sea",emoji:"🌊",color:3},{ar:"صِف الجبل",en:"Describe a mountain",emoji:"⛰️",color:4},{ar:"ما الزهرة المفضلة لديك؟",en:"What is your favourite flower?",emoji:"🌺",color:5},{ar:"صِف شروق الشمس",en:"Describe a sunrise",emoji:"🌅",color:1},{ar:"ما الطقس المفضل لديك؟",en:"What is your favourite weather?",emoji:"🌤️",color:2},{ar:"صِف الغابة",en:"Describe a forest",emoji:"🌲",color:3},{ar:"ما الذي تحب في المطر؟",en:"What do you love about the rain?",emoji:"🌧️",color:4},{ar:"صِف البركة أو النهر",en:"Describe a pond or river",emoji:"🏞️",color:5}],medium:[{ar:"لماذا نحب المطر؟",en:"Why do we love the rain?",emoji:"🌧️",color:1},{ar:"كيف نحافظ على البيئة؟",en:"How do we keep the environment clean?",emoji:"♻️",color:2},{ar:"لماذا يجب أن نزرع الأشجار؟",en:"Why should we plant more trees?",emoji:"🌱",color:3},{ar:"ما أجمل مكان طبيعي زرته؟",en:"What is the most beautiful natural place you visited?",emoji:"🏞️",color:4},{ar:"كيف تؤثر الطبيعة على مزاجنا؟",en:"How does nature affect our mood?",emoji:"😊",color:5},{ar:"ما أهمية الغابات لكوكب الأرض؟",en:"Why are forests important for the planet?",emoji:"🌳",color:1},{ar:"كيف نحمي المحيطات؟",en:"How do we protect the oceans?",emoji:"🌊",color:2},{ar:"ما أهمية الماء للحياة؟",en:"Why is water important for life?",emoji:"💧",color:3},{ar:"لماذا نقلل من استهلاك البلاستيك؟",en:"Why should we reduce plastic use?",emoji:"🚫",color:4},{ar:"كيف تختلف الطبيعة في مناطق مختلفة؟",en:"How does nature differ across regions?",emoji:"🗺️",color:5}],hard:[{ar:"ما تأثير التلوث على الطبيعة؟",en:"What is the impact of pollution on nature?",emoji:"🌍",color:1},{ar:"تغير المناخ ومسؤوليتنا الجماعية",en:"Climate change and our collective responsibility",emoji:"🌡️",color:2},{ar:"هل التنمية تتعارض مع حماية البيئة؟",en:"Does development conflict with environmental protection?",emoji:"⚖️",color:3},{ar:"ما أسباب ارتفاع درجات الحرارة عالمياً؟",en:"What causes global temperature rise?",emoji:"🔥",color:4},{ar:"هل الطاقة النووية بديل آمن؟",en:"Is nuclear energy a safe alternative?",emoji:"☢️",color:5},{ar:"هل الطاقة الشمسية حل فعّال؟",en:"Is solar energy an effective solution?",emoji:"☀️",color:1},{ar:"كيف يؤثر ذوبان الجليد على الكوكب؟",en:"How does ice melting affect the planet?",emoji:"🧊",color:2},{ar:"هل اتفاقيات المناخ الدولية كافية؟",en:"Are international climate agreements enough?",emoji:"📜",color:3},{ar:"كيف تؤثر الحروب على البيئة؟",en:"How do wars affect the environment?",emoji:"💣",color:4},{ar:"هل يمكن عكس آثار التغير المناخي؟",en:"Can the effects of climate change be reversed?",emoji:"🔄",color:5}]}
+};
+const letters=[{l:"A",sound:"/æ/",words:[{w:"Apple",ar:"تفاحة",e:"🍎"},{w:"Ant",ar:"نملة",e:"🐜"},{w:"Arrow",ar:"سهم",e:"🏹"}]},{l:"B",sound:"/b/",words:[{w:"Ball",ar:"كرة",e:"⚽"},{w:"Butterfly",ar:"فراشة",e:"🦋"},{w:"Bear",ar:"دب",e:"🐻"}]},{l:"C",sound:"/k/",words:[{w:"Cat",ar:"قطة",e:"🐱"},{w:"Car",ar:"سيارة",e:"🚗"},{w:"Cake",ar:"كعكة",e:"🎂"}]},{l:"D",sound:"/d/",words:[{w:"Dog",ar:"كلب",e:"🐶"},{w:"Duck",ar:"بطة",e:"🦆"},{w:"Door",ar:"باب",e:"🚪"}]},{l:"E",sound:"/ɛ/",words:[{w:"Elephant",ar:"فيل",e:"🐘"},{w:"Egg",ar:"بيضة",e:"🥚"},{w:"Eye",ar:"عين",e:"👁️"}]},{l:"F",sound:"/f/",words:[{w:"Fish",ar:"سمكة",e:"🐟"},{w:"Flower",ar:"زهرة",e:"🌸"},{w:"Fire",ar:"نار",e:"🔥"}]},{l:"G",sound:"/g/",words:[{w:"Giraffe",ar:"زرافة",e:"🦒"},{w:"Grapes",ar:"عنب",e:"🍇"},{w:"Guitar",ar:"غيتار",e:"🎸"}]},{l:"H",sound:"/h/",words:[{w:"Horse",ar:"حصان",e:"🐴"},{w:"House",ar:"بيت",e:"🏠"},{w:"Hat",ar:"قبعة",e:"🎩"}]},{l:"I",sound:"/ɪ/",words:[{w:"Ice cream",ar:"آيس كريم",e:"🍦"},{w:"Island",ar:"جزيرة",e:"🏝️"},{w:"Igloo",ar:"إيغلو",e:"🏔️"}]},{l:"J",sound:"/dʒ/",words:[{w:"Jellyfish",ar:"قنديل البحر",e:"🪼"},{w:"Juice",ar:"عصير",e:"🧃"},{w:"Jacket",ar:"جاكيت",e:"🧥"}]},{l:"K",sound:"/k/",words:[{w:"Kangaroo",ar:"كنغر",e:"🦘"},{w:"Key",ar:"مفتاح",e:"🔑"},{w:"Kite",ar:"طائرة ورقية",e:"🪁"}]},{l:"L",sound:"/l/",words:[{w:"Lion",ar:"أسد",e:"🦁"},{w:"Lemon",ar:"ليمون",e:"🍋"},{w:"Lamp",ar:"مصباح",e:"💡"}]},{l:"M",sound:"/m/",words:[{w:"Monkey",ar:"قرد",e:"🐒"},{w:"Moon",ar:"قمر",e:"🌙"},{w:"Mango",ar:"مانغو",e:"🥭"}]},{l:"N",sound:"/n/",words:[{w:"Nest",ar:"عش",e:"🪺"},{w:"Nose",ar:"أنف",e:"👃"},{w:"Night",ar:"ليل",e:"🌙"}]},{l:"O",sound:"/ɒ/",words:[{w:"Orange",ar:"برتقالة",e:"🍊"},{w:"Owl",ar:"بومة",e:"🦉"},{w:"Ocean",ar:"محيط",e:"🌊"}]},{l:"P",sound:"/p/",words:[{w:"Parrot",ar:"ببغاء",e:"🦜"},{w:"Pizza",ar:"بيتزا",e:"🍕"},{w:"Pencil",ar:"قلم رصاص",e:"✏️"}]},{l:"Q",sound:"/kw/",words:[{w:"Queen",ar:"ملكة",e:"👸"},{w:"Question",ar:"سؤال",e:"❓"},{w:"Quiet",ar:"هادئ",e:"🤫"}]},{l:"R",sound:"/r/",words:[{w:"Rabbit",ar:"أرنب",e:"🐰"},{w:"Rainbow",ar:"قوس قزح",e:"🌈"},{w:"Rose",ar:"وردة",e:"🌹"}]},{l:"S",sound:"/s/",words:[{w:"Sun",ar:"شمس",e:"☀️"},{w:"Snake",ar:"ثعبان",e:"🐍"},{w:"Star",ar:"نجمة",e:"⭐"}]},{l:"T",sound:"/t/",words:[{w:"Tiger",ar:"نمر",e:"🐯"},{w:"Tree",ar:"شجرة",e:"🌳"},{w:"Train",ar:"قطار",e:"🚂"}]},{l:"U",sound:"/ʌ/",words:[{w:"Umbrella",ar:"مظلة",e:"☂️"},{w:"Unicorn",ar:"وحيد القرن",e:"🦄"},{w:"Up",ar:"فوق",e:"⬆️"}]},{l:"V",sound:"/v/",words:[{w:"Violin",ar:"كمان",e:"🎻"},{w:"Volcano",ar:"بركان",e:"🌋"},{w:"Van",ar:"فان",e:"🚐"}]},{l:"W",sound:"/w/",words:[{w:"Wolf",ar:"ذئب",e:"🐺"},{w:"Watermelon",ar:"بطيخ",e:"🍉"},{w:"Wind",ar:"ريح",e:"💨"}]},{l:"X",sound:"/ks/",words:[{w:"Fox",ar:"ثعلب",e:"🦊"},{w:"Box",ar:"صندوق",e:"📦"},{w:"Axe",ar:"فأس",e:"🪓"}]},{l:"Y",sound:"/j/",words:[{w:"Yak",ar:"ياك",e:"🐂"},{w:"Yellow",ar:"أصفر",e:"💛"},{w:"Yarn",ar:"خيط",e:"🧶"}]},{l:"Z",sound:"/z/",words:[{w:"Zebra",ar:"حمار وحشي",e:"🦓"},{w:"Zoo",ar:"حديقة حيوانات",e:"🦁"},{w:"Zero",ar:"صفر",e:"0️⃣"}]}];
+const animals=[{e:"🐶",en:"Dog",ar:"كلب"},{e:"🐱",en:"Cat",ar:"قطة"},{e:"🐘",en:"Elephant",ar:"فيل"},{e:"🦁",en:"Lion",ar:"أسد"},{e:"🐯",en:"Tiger",ar:"نمر"},{e:"🐒",en:"Monkey",ar:"قرد"},{e:"🦒",en:"Giraffe",ar:"زرافة"},{e:"🐻",en:"Bear",ar:"دب"},{e:"🦊",en:"Fox",ar:"ثعلب"},{e:"🐰",en:"Rabbit",ar:"أرنب"},{e:"🐸",en:"Frog",ar:"ضفدع"},{e:"🦋",en:"Butterfly",ar:"فراشة"},{e:"🐬",en:"Dolphin",ar:"دولفين"},{e:"🦜",en:"Parrot",ar:"ببغاء"},{e:"🐧",en:"Penguin",ar:"بطريق"},{e:"🦓",en:"Zebra",ar:"حمار وحشي"},{e:"🦘",en:"Kangaroo",ar:"كنغر"},{e:"🦉",en:"Owl",ar:"بومة"}];
+const days=[{n:"1",en:"Monday",ar:"الاثنين",e:"🌙"},{n:"2",en:"Tuesday",ar:"الثلاثاء",e:"🌟"},{n:"3",en:"Wednesday",ar:"الأربعاء",e:"🌿"},{n:"4",en:"Thursday",ar:"الخميس",e:"⚡"},{n:"5",en:"Friday",ar:"الجمعة",e:"🕌"},{n:"6",en:"Saturday",ar:"السبت",e:"🎉"},{n:"7",en:"Sunday",ar:"الأحد",e:"☀️"}];
+const months=[{n:"1",en:"January",ar:"يناير",e:"❄️"},{n:"2",en:"February",ar:"فبراير",e:"💝"},{n:"3",en:"March",ar:"مارس",e:"🌸"},{n:"4",en:"April",ar:"أبريل",e:"🌧️"},{n:"5",en:"May",ar:"مايو",e:"🌺"},{n:"6",en:"June",ar:"يونيو",e:"☀️"},{n:"7",en:"July",ar:"يوليو",e:"🏖️"},{n:"8",en:"August",ar:"أغسطس",e:"🌻"},{n:"9",en:"September",ar:"سبتمبر",e:"🍂"},{n:"10",en:"October",ar:"أكتوبر",e:"🎃"},{n:"11",en:"November",ar:"نوفمبر",e:"🍁"},{n:"12",en:"December",ar:"ديسمبر",e:"🎄"}];
+const numbers=[{n:1,en:"One",ar:"واحد"},{n:2,en:"Two",ar:"اثنان"},{n:3,en:"Three",ar:"ثلاثة"},{n:4,en:"Four",ar:"أربعة"},{n:5,en:"Five",ar:"خمسة"},{n:6,en:"Six",ar:"ستة"},{n:7,en:"Seven",ar:"سبعة"},{n:8,en:"Eight",ar:"ثمانية"},{n:9,en:"Nine",ar:"تسعة"},{n:10,en:"Ten",ar:"عشرة"},{n:11,en:"Eleven",ar:"أحد عشر"},{n:12,en:"Twelve",ar:"اثنا عشر"},{n:13,en:"Thirteen",ar:"ثلاثة عشر"},{n:20,en:"Twenty",ar:"عشرون"},{n:30,en:"Thirty",ar:"ثلاثون"},{n:100,en:"Hundred",ar:"مئة"}];
+const wordsOfDay=[{en:"Wonderful",ar:"رائع",emoji:"✨"},{en:"Brave",ar:"شجاع",emoji:"🦁"},{en:"Delicious",ar:"لذيذ",emoji:"😋"},{en:"Friendly",ar:"ودود",emoji:"😊"},{en:"Colourful",ar:"ملوّن",emoji:"🎨"},{en:"Excited",ar:"متحمس",emoji:"🤩"},{en:"Gigantic",ar:"عملاق",emoji:"🐘"},{en:"Shiny",ar:"لامع",emoji:"⭐"}];
+const mascots=["🦜","🐸","🦊","🐼","🦋","🐧","🦁","🐯"];
+const colors=['card-color-1','card-color-2','card-color-3','card-color-4','card-color-5'];
+let currentLevel='easy',currentCat='all',selectedTime=30,timeLeft=30,totalTime=30,running=false,timerInterval=null,stars=0,sessionsToday=0;
+let mediaRecorder=null,audioChunks=[],audioBlob=null,audioUrl=null,isRecording=false;
+const tw=wordsOfDay[new Date().getDay()%wordsOfDay.length];
+document.getElementById('wotdEn').textContent=tw.en;
+document.getElementById('wotdAr').textContent=tw.ar;
+document.getElementById('wotdEmoji').textContent=tw.emoji;
+document.getElementById('mascot').textContent=mascots[Math.floor(Math.random()*mascots.length)];
+function createStars(){const c=document.getElementById('starsBg');['⭐','🌟','✨','💫'].forEach(e=>{for(let j=0;j<3;j++){const s=document.createElement('div');s.className='star';s.textContent=e;s.style.left=Math.random()*100+'%';s.style.fontSize=(12+Math.random()*14)+'px';s.style.animationDuration=(8+Math.random()*12)+'s';s.style.animationDelay=(Math.random()*10)+'s';c.appendChild(s);}});}
+createStars();
+function buildLetters(){const g=document.getElementById('lettersGrid');letters.forEach((l,i)=>{const d=document.createElement('div');d.className='letter-card';d.innerHTML=`<div class="letter-big">${l.l}</div><div class="letter-small">${l.l.toLowerCase()}</div>`;d.onclick=()=>showLetterDetail(i);g.appendChild(d);});}
+function showLetterDetail(i){const l=letters[i];document.getElementById('detailLetter').textContent=l.l;document.getElementById('detailSound').textContent='Sound: '+l.sound;const dw=document.getElementById('detailWords');dw.innerHTML='';l.words.forEach(w=>{const div=document.createElement('div');div.style.textAlign='center';div.innerHTML=`<div class="word-pill" data-word="${w.w}">${w.e} ${w.w}</div><div class="word-ar-small">${w.ar}</div>`;dw.appendChild(div);});document.getElementById('letterDetail').classList.add('show');speakText(l.l);document.querySelectorAll('.letter-card').forEach(c=>c.classList.remove('active'));document.querySelectorAll('.letter-card')[i].classList.add('active');}
+// Event delegation for word pills
+document.addEventListener('click', e=>{
+  const pill = e.target.closest('.word-pill');
+  if(pill) speakText(pill.getAttribute('data-word'));
+});
+function buildAnimals(){const g=document.getElementById('animalsGrid');animals.forEach(a=>{const d=document.createElement('div');d.className='animal-card';d.innerHTML=`<div class="animal-emoji-big">${a.e}</div><div class="animal-name-en">${a.en}</div><div class="animal-name-ar">${a.ar}</div><button class="animal-sound-btn" data-word="${a.en}">🔊 استمع</button>`;g.appendChild(d);});
+// Use event delegation for animal buttons
+document.getElementById('animalsGrid').addEventListener('click', e=>{
+  const btn = e.target.closest('.animal-sound-btn');
+  if(btn) speakText(btn.getAttribute('data-word'));
+  const card = e.target.closest('.animal-card');
+  if(card && !e.target.closest('.animal-sound-btn')){
+    const word = card.querySelector('.animal-name-en').textContent;
+    speakText(word);
+  }
+});}
+let currentDmnTab='days';
+function setDmnTab(tab,el){currentDmnTab=tab;document.querySelectorAll('.dmn-tab').forEach(t=>t.classList.remove('active'));el.classList.add('active');renderDmn();}
+function renderDmn(){const c=document.getElementById('dmnContent');if(currentDmnTab==='days'){c.innerHTML='<div class="dmn-list">'+days.map(d=>`<div class="dmn-item" data-word="${d.en}"><div class="dmn-num">${d.n}</div><div><div class="dmn-en">${d.en}</div><div class="dmn-ar">${d.ar}</div></div><div class="dmn-emoji">${d.e}</div></div>`).join('')+'</div>';}else if(currentDmnTab==='months'){c.innerHTML='<div class="dmn-list">'+months.map(m=>`<div class="dmn-item" data-word="${m.en}"><div class="dmn-num">${m.n}</div><div><div class="dmn-en">${m.en}</div><div class="dmn-ar">${m.ar}</div></div><div class="dmn-emoji">${m.e}</div></div>`).join('')+'</div>';}else{c.innerHTML='<div class="numbers-grid">'+numbers.map(n=>`<div class="num-card" data-word="${n.en}"><div class="num-big">${n.n}</div><div class="num-word">${n.en}</div><div class="num-ar">${n.ar}</div></div>`).join('')+'</div>';}}
+// Event delegation for DMN items
+document.getElementById('dmnContent').addEventListener('click', e=>{
+  const item = e.target.closest('[data-word]');
+  if(item) speakText(item.getAttribute('data-word'));
+});
+function showPage(page,el){document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));document.querySelectorAll('.nav-btn').forEach(b=>b.classList.remove('active'));document.getElementById('page-'+page).classList.add('active');el.classList.add('active');if(page==='dmn')renderDmn();}
+function setLevel(l,el){currentLevel=l;document.querySelectorAll('.level-btn').forEach(b=>b.classList.remove('active'));el.classList.add('active');}
+function setCat(c,el){currentCat=c;document.querySelectorAll('.cat-btn').forEach(b=>b.classList.remove('active'));el.classList.add('active');}
+const adultTopics = {
+all:{
+easy:[
+{ar:"وصف روتينك اليومي",en:"Describe your daily routine",emoji:"☀️",color:1},
+{ar:"طعامك المفضل ولماذا؟",en:"Your favourite food and why",emoji:"🍽️",color:2},
+{ar:"مدينتك وما يميزها",en:"Your city and what makes it special",emoji:"🏙️",color:3},
+{ar:"هوايتك المفضلة",en:"Your favourite hobby",emoji:"🎯",color:4},
+{ar:"آخر فيلم شاهدته",en:"The last film you watched",emoji:"🎬",color:5},
+{ar:"صِف منزلك المثالي",en:"Describe your dream home",emoji:"🏡",color:1},
+{ar:"أفضل إجازة قضيتها",en:"The best holiday you have had",emoji:"✈️",color:2},
+{ar:"شخص أثّر في حياتك",en:"A person who influenced your life",emoji:"👤",color:3},
+{ar:"ما أهم درس تعلمته في الحياة؟",en:"What is the most important life lesson you learned?",emoji:"💡",color:4},
+{ar:"ما الهدف الذي تسعى لتحقيقه؟",en:"What goal are you working towards?",emoji:"🎯",color:5},
+],
+medium:[
+{ar:"هل المال يصنع السعادة؟",en:"Does money buy happiness?",emoji:"💰",color:1},
+{ar:"تأثير التكنولوجيا على حياتنا",en:"How technology affects our lives",emoji:"📱",color:2},
+{ar:"ما هي الوظيفة المثالية؟",en:"What is the ideal job?",emoji:"💼",color:3},
+{ar:"التوازن بين العمل والحياة",en:"Work-life balance",emoji:"⚖️",color:4},
+{ar:"أهمية تعلم لغة ثانية",en:"The importance of learning a second language",emoji:"🌍",color:5},
+{ar:"هل الدراسة في الخارج مهمة؟",en:"Is studying abroad important?",emoji:"🎓",color:1},
+{ar:"وسائل التواصل: نعمة أم نقمة؟",en:"Social media: blessing or curse?",emoji:"💻",color:2},
+{ar:"كيف تتعامل مع الضغط والتوتر؟",en:"How do you deal with stress?",emoji:"🧘",color:3},
+{ar:"هل العمل الحر أفضل من الوظيفة؟",en:"Is freelancing better than a fixed job?",emoji:"💼",color:4},
+{ar:"ما أهمية الصحة النفسية في حياتنا؟",en:"Why is mental health important in our lives?",emoji:"🧠",color:5},
+],
+hard:[
+{ar:"هل الذكاء الاصطناعي يهدد الوظائف؟",en:"Is AI threatening jobs?",emoji:"🤖",color:1},
+{ar:"العولمة وأثرها على الهوية الثقافية",en:"Globalisation and cultural identity",emoji:"🌐",color:2},
+{ar:"التعليم الجيد: حق أم امتياز؟",en:"Quality education: right or privilege?",emoji:"📚",color:3},
+{ar:"تغير المناخ ومسؤوليتنا",en:"Climate change and our responsibility",emoji:"🌱",color:4},
+{ar:"مستقبل العمل عن بُعد",en:"The future of remote work",emoji:"🏠",color:5},
+{ar:"الصحة النفسية في المجتمع العربي",en:"Mental health in Arab society",emoji:"🧠",color:1},
+{ar:"هل الديمقراطية هي أفضل نظام حكم؟",en:"Is democracy the best system of government?",emoji:"🗳️",color:2},
+{ar:"ما حدود حرية التعبير؟",en:"What are the limits of freedom of speech?",emoji:"🗣️",color:3},
+{ar:"الفجوة بين الأجيال: مشكلة حقيقية؟",en:"The generation gap: is it a real problem?",emoji:"👴",color:4},
+{ar:"كيف نبني مجتمعاً أكثر عدلاً؟",en:"How do we build a more just society?",emoji:"🏛️",color:5},
+]
+},
+work:{easy:[{ar:"صِف عملك الحالي",en:"Describe your current job",emoji:"💼",color:1},{ar:"ما هو حلمك المهني؟",en:"What is your career dream?",emoji:"🚀",color:2},{ar:"يومك النموذجي في العمل",en:"A typical day at work",emoji:"📋",color:3},{ar:"ما الذي تحبه في عملك؟",en:"What do you love about your job?",emoji:"❤️",color:4},{ar:"ما المهارات التي طوّرتها في عملك؟",en:"What skills have you developed at work?",emoji:"📈",color:5},{ar:"صِف زميلاً ملهماً",en:"Describe an inspiring colleague",emoji:"💡",color:1},{ar:"هل تفضل العمل من البيت أم المكتب؟",en:"Do you prefer working from home or office?",emoji:"🏠",color:2},{ar:"ما اللحظة التي فخرت بها في العمل؟",en:"What moment made you proud at work?",emoji:"🏆",color:3},{ar:"كيف تبدأ يوم عملك؟",en:"How do you start your working day?",emoji:"☀️",color:4},{ar:"كيف تحتفل بالإنجاز في العمل؟",en:"How do you celebrate achievements at work?",emoji:"🎉",color:5}],medium:[{ar:"كيف تدير وقتك في العمل؟",en:"How do you manage your time at work?",emoji:"⏰",color:1},{ar:"العمل بروح الفريق",en:"Working as a team",emoji:"🤝",color:2},{ar:"كيف تتعامل مع زميل صعب؟",en:"How do you deal with a difficult colleague?",emoji:"😤",color:3},{ar:"ما الفرق بين القائد والمدير؟",en:"What is the difference between a leader and a manager?",emoji:"👑",color:4},{ar:"كيف تطوّر مهاراتك المهنية؟",en:"How do you develop your professional skills?",emoji:"📈",color:5},{ar:"كيف تتعامل مع فشل مشروع؟",en:"How do you deal with a failed project?",emoji:"💔",color:1},{ar:"كيف تحافظ على التحفيز في العمل؟",en:"How do you stay motivated at work?",emoji:"💪",color:2},{ar:"كيف تبني علاقات مهنية ناجحة؟",en:"How do you build successful professional relationships?",emoji:"🤝",color:3},{ar:"كيف تتعامل مع التغيير في العمل؟",en:"How do you adapt to change at work?",emoji:"🔄",color:4},{ar:"كيف تقدم عرضاً مؤثراً؟",en:"How do you deliver an impactful presentation?",emoji:"📊",color:5}],hard:[{ar:"القيادة الفعّالة في بيئة العمل",en:"Effective leadership in the workplace",emoji:"👑",color:1},{ar:"تأثير الأتمتة على سوق العمل",en:"How automation affects the job market",emoji:"🤖",color:2},{ar:"مستقبل سوق العمل مع الذكاء الاصطناعي",en:"The future of the job market with AI",emoji:"🤖",color:3},{ar:"ما أخلاقيات الأعمال التجارية؟",en:"What are business ethics?",emoji:"⚖️",color:4},{ar:"كيف نقضي على الفجوة بين الجنسين في سوق العمل؟",en:"How do we close the gender gap in the workplace?",emoji:"👩",color:5},{ar:"هل ساعات العمل الأقل تزيد الإنتاجية؟",en:"Do fewer working hours increase productivity?",emoji:"⏰",color:1},{ar:"ما مستقبل المهن التقليدية؟",en:"What is the future of traditional professions?",emoji:"🔧",color:2},{ar:"هل العمل الحر يؤثر على الصحة النفسية؟",en:"Does freelancing affect mental health?",emoji:"🧠",color:3},{ar:"كيف نوازن بين الربحية والمسؤولية الاجتماعية؟",en:"How do we balance profitability and social responsibility?",emoji:"⚖️",color:4},{ar:"هل الشركات مسؤولة عن رفاهية موظفيها؟",en:"Are companies responsible for employee wellbeing?",emoji:"🏢",color:5}]},
+travel:{easy:[{ar:"بلد تحب تزوره",en:"A country you would love to visit",emoji:"🗺️",color:1},{ar:"أفضل رحلة في حياتك",en:"The best trip of your life",emoji:"✈️",color:2},{ar:"ماذا تحضر في حقيبتك؟",en:"What do you pack in your bag?",emoji:"🧳",color:3},{ar:"صِف مدينة تحبها",en:"Describe a city you love",emoji:"🏙️",color:4},{ar:"ما أجمل شيء رأيته في رحلة؟",en:"What is the most beautiful thing you saw on a trip?",emoji:"🌅",color:5},{ar:"صِف أجمل شاطئ زرته",en:"Describe the most beautiful beach you visited",emoji:"🏖️",color:1},{ar:"ما وسيلة السفر المفضلة لديك؟",en:"What is your favourite way to travel?",emoji:"🚂",color:2},{ar:"ما الطعام الذي جربته في سفرك؟",en:"What food did you try on your travels?",emoji:"🍽️",color:3},{ar:"ما أصعب موقف في سفر؟",en:"What was the most difficult travel situation?",emoji:"😰",color:4},{ar:"ما الثقافة التي أعجبتك في سفرك؟",en:"What culture impressed you on your travels?",emoji:"🎭",color:5}],medium:[{ar:"السياحة الثقافية مقابل الترفيهية",en:"Cultural vs leisure tourism",emoji:"🏛️",color:1},{ar:"تجربة سفر غيّرت نظرتك للحياة",en:"A travel experience that changed your perspective",emoji:"🌅",color:2},{ar:"هل السفر المنفرد أفضل؟",en:"Is solo travel better than group travel?",emoji:"🧍",color:3},{ar:"ما أهمية السفر لتطوير الشخصية؟",en:"Why is travel important for personal development?",emoji:"🌍",color:4},{ar:"كيف تتعامل مع الصدمة الثقافية؟",en:"How do you deal with culture shock?",emoji:"😮",color:5},{ar:"هل السياحة تضر بالمجتمعات المحلية؟",en:"Does tourism harm local communities?",emoji:"🏘️",color:1},{ar:"كيف تسافر بميزانية محدودة؟",en:"How do you travel on a limited budget?",emoji:"💰",color:2},{ar:"كيف تختار وجهتك السياحية؟",en:"How do you choose your travel destination?",emoji:"🗺️",color:3},{ar:"كيف تؤثر السياحة على الاقتصاد المحلي؟",en:"How does tourism affect the local economy?",emoji:"💰",color:4},{ar:"هل السفر يساعد على الشفاء النفسي؟",en:"Does travel help with mental healing?",emoji:"🧘",color:5}],hard:[{ar:"تأثير السياحة على البيئة",en:"The impact of tourism on the environment",emoji:"🌿",color:1},{ar:"هل السياحة الجماعية تدمر التراث؟",en:"Does mass tourism destroy cultural heritage?",emoji:"🏛️",color:2},{ar:"ما مسؤولية السائح تجاه البيئة؟",en:"What is the traveller responsibility towards the environment?",emoji:"♻️",color:3},{ar:"هل يجب تقييد السياحة في المناطق الحساسة؟",en:"Should tourism be restricted in sensitive areas?",emoji:"🚫",color:4},{ar:"ما مستقبل السياحة الفضائية؟",en:"What is the future of space tourism?",emoji:"🚀",color:5},{ar:"كيف تؤثر منصات التواصل على قرارات السفر؟",en:"How does social media influence travel decisions?",emoji:"📱",color:1},{ar:"ما تأثير السياحة على هوية المجتمعات؟",en:"How does tourism affect local community identity?",emoji:"🏘️",color:2},{ar:"كيف تتعامل الدول مع السياحة المفرطة؟",en:"How do countries deal with overtourism?",emoji:"👥",color:3},{ar:"كيف تؤثر التقنيات الجديدة على السفر؟",en:"How do new technologies affect the travel experience?",emoji:"🤖",color:4},{ar:"كيف غيّر كوفيد مفهوم السياحة؟",en:"How did COVID change the concept of tourism?",emoji:"😷",color:5}]},
+health:{easy:[{ar:"روتينك الصحي اليومي",en:"Your daily health routine",emoji:"🏃",color:1},{ar:"رياضتك المفضلة",en:"Your favourite sport",emoji:"⚽",color:2},{ar:"كيف تحافظ على صحتك؟",en:"How do you stay healthy?",emoji:"🥗",color:3},{ar:"ما الطعام الذي يعطيك طاقة؟",en:"What food gives you energy?",emoji:"⚡",color:4},{ar:"كيف تنام جيداً؟",en:"How do you sleep well?",emoji:"😴",color:5},{ar:"صِف نشاطاً رياضياً تحبه",en:"Describe a sport activity you enjoy",emoji:"🎾",color:1},{ar:"ما فوائد المشي اليومي؟",en:"What are the benefits of daily walking?",emoji:"🚶",color:2},{ar:"صِف يوماً كنت فيه بصحة ممتازة",en:"Describe a day when you felt perfectly healthy",emoji:"💪",color:3},{ar:"ما العادات الصباحية الصحية؟",en:"What are healthy morning habits?",emoji:"🌅",color:4},{ar:"صِف طعاماً صحياً تحبه",en:"Describe a healthy food you love",emoji:"🥑",color:5}],medium:[{ar:"أهمية النوم الكافي",en:"The importance of good sleep",emoji:"😴",color:1},{ar:"كيف تتعامل مع التوتر؟",en:"How do you manage stress?",emoji:"🧘",color:2},{ar:"الأكل الصحي في الحياة المشغولة",en:"Healthy eating in a busy life",emoji:"🥦",color:3},{ar:"كيف تحافظ على وزن صحي؟",en:"How do you maintain a healthy weight?",emoji:"⚖️",color:4},{ar:"ما أثر التأمل على الصحة؟",en:"What is the effect of meditation on health?",emoji:"🧘",color:5},{ar:"كيف تبني عادات صحية دائمة؟",en:"How do you build lasting healthy habits?",emoji:"📈",color:1},{ar:"ما العلاقة بين التغذية والمزاج؟",en:"What is the relationship between nutrition and mood?",emoji:"😊",color:2},{ar:"كيف تتعامل مع إدمان الهاتف؟",en:"How do you deal with phone addiction?",emoji:"📵",color:3},{ar:"ما أهمية التوازن بين العمل والراحة؟",en:"Why is work-rest balance important?",emoji:"⚖️",color:4},{ar:"كيف تتعامل مع القلق اليومي؟",en:"How do you deal with daily anxiety?",emoji:"😰",color:5}],hard:[{ar:"الصحة النفسية: هل نتحدث عنها بما يكفي؟",en:"Mental health: do we talk about it enough?",emoji:"🧠",color:1},{ar:"هل نظام الرعاية الصحية عادل؟",en:"Is the healthcare system fair for everyone?",emoji:"⚖️",color:2},{ar:"كيف يؤثر الفقر على الصحة؟",en:"How does poverty affect health?",emoji:"💸",color:3},{ar:"هل الصحة مسؤولية فردية أم جماعية؟",en:"Is health an individual or collective responsibility?",emoji:"👥",color:4},{ar:"هل يجب أن تكون الرعاية الصحية مجانية؟",en:"Should healthcare be free for everyone?",emoji:"🏥",color:5},{ar:"ما مستقبل الطب مع الذكاء الاصطناعي؟",en:"What is the future of medicine with AI?",emoji:"🤖",color:1},{ar:"هل ينبغي تقييد إعلانات الأغذية غير الصحية؟",en:"Should unhealthy food advertising be restricted?",emoji:"🚫",color:2},{ar:"هل الطب البديل فعّال؟",en:"Is alternative medicine effective?",emoji:"🌿",color:3},{ar:"هل اللقاحات إلزامية أم اختيارية؟",en:"Should vaccines be mandatory or optional?",emoji:"💉",color:4},{ar:"كيف نبني مجتمعاً أكثر صحة؟",en:"How do we build a healthier society?",emoji:"🌟",color:5}]},
+tech:{easy:[{ar:"تطبيقك المفضل ولماذا؟",en:"Your favourite app and why?",emoji:"📱",color:1},{ar:"كيف تستخدم الإنترنت يومياً؟",en:"How do you use the internet daily?",emoji:"💻",color:2},{ar:"أول هاتف ذكي استخدمته",en:"The first smartphone you ever used",emoji:"📲",color:3},{ar:"ما الجهاز التقني الذي لا تستغني عنه؟",en:"What tech device can you not live without?",emoji:"⌚",color:4},{ar:"ما المنصة الاجتماعية التي تستخدمها أكثر؟",en:"What social media platform do you use most?",emoji:"📱",color:5},{ar:"صِف تجربتك مع الذكاء الاصطناعي",en:"Describe your experience with AI",emoji:"🤖",color:1},{ar:"ما الاختراع التقني الأهم في حياتك؟",en:"What is the most important tech invention in your lifetime?",emoji:"💡",color:2},{ar:"كيف تتعلم تقنية جديدة؟",en:"How do you learn a new technology?",emoji:"📚",color:3},{ar:"ما مزايا التعلم الإلكتروني؟",en:"What are the advantages of e-learning?",emoji:"🌐",color:4},{ar:"كيف تحمي نفسك من الاحتيال الإلكتروني؟",en:"How do you protect yourself from online scams?",emoji:"🚫",color:5}],medium:[{ar:"هل نحن مدمنون على التكنولوجيا؟",en:"Are we addicted to technology?",emoji:"📵",color:1},{ar:"الخصوصية على الإنترنت",en:"Privacy on the internet",emoji:"🔒",color:2},{ar:"كيف غيّرت التكنولوجيا طريقة عملنا؟",en:"How has technology changed the way we work?",emoji:"🔄",color:3},{ar:"ما أهمية الأمن السيبراني؟",en:"Why is cybersecurity important?",emoji:"🔐",color:4},{ar:"هل التعليم الإلكتروني بديل حقيقي؟",en:"Is e-learning a real alternative to traditional learning?",emoji:"💻",color:5},{ar:"ما تأثير الأخبار الكاذبة على المجتمع؟",en:"How does fake news affect society?",emoji:"📰",color:1},{ar:"هل ينبغي تعليم البرمجة في المدارس؟",en:"Should coding be taught in schools?",emoji:"💻",color:2},{ar:"كيف تؤثر خوارزميات التوصية على قراراتنا؟",en:"How do recommendation algorithms affect our decisions?",emoji:"🔄",color:3},{ar:"ما تأثير منصات البث على الترفيه؟",en:"How have streaming platforms affected entertainment?",emoji:"🎬",color:4},{ar:"هل نحن في عصر المعلومات المفرطة؟",en:"Are we living in an age of information overload?",emoji:"📊",color:5}],hard:[{ar:"أخلاقيات الذكاء الاصطناعي",en:"The ethics of artificial intelligence",emoji:"⚙️",color:1},{ar:"هل يجب تنظيم وسائل التواصل حكومياً؟",en:"Should governments regulate social media?",emoji:"📜",color:2},{ar:"مخاطر التضليل الرقمي",en:"The dangers of digital misinformation",emoji:"⚠️",color:3},{ar:"هل الذكاء الاصطناعي سيتفوق على الإنسان؟",en:"Will AI ever surpass human intelligence?",emoji:"🧠",color:4},{ar:"الفجوة الرقمية بين الدول",en:"The digital divide between countries",emoji:"🌍",color:5},{ar:"ما مستقبل الخصوصية في عالم البيانات؟",en:"What is the future of privacy in a data-driven world?",emoji:"🔒",color:1},{ar:"كيف نحمي الأطفال في الفضاء الرقمي؟",en:"How do we protect children in the digital space?",emoji:"👦",color:2},{ar:"هل الذكاء الاصطناعي التوليدي يهدد الإبداع؟",en:"Does generative AI threaten human creativity?",emoji:"🎨",color:3},{ar:"ما مستقبل العملات الرقمية؟",en:"What is the future of digital currencies?",emoji:"₿",color:4},{ar:"كيف تؤثر التكنولوجيا على الديمقراطية؟",en:"How does technology affect democracy?",emoji:"🗳️",color:5}]},
+society:{easy:[{ar:"تقليد تحبه في بلدك",en:"A tradition you love in your country",emoji:"🎉",color:1},{ar:"الفرق بين الأجيال",en:"Differences between generations",emoji:"👴",color:2},{ar:"ما الشيء الذي يميز بلدك؟",en:"What makes your country unique?",emoji:"🗺️",color:3},{ar:"صِف سوقاً شعبياً",en:"Describe a traditional market",emoji:"🏪",color:4},{ar:"ما الأكلة الوطنية في بلدك؟",en:"What is the national dish of your country?",emoji:"🥘",color:5},{ar:"صِف قريتك أو حيّك",en:"Describe your village or neighbourhood",emoji:"🏘️",color:1},{ar:"ما العيد الأهم في بلدك؟",en:"What is the most important holiday in your country?",emoji:"🌟",color:2},{ar:"صِف مهرجاناً أو حفلاً شعبياً",en:"Describe a festival or folk celebration",emoji:"🎭",color:3},{ar:"ما التغيير الذي تتمنى في مجتمعك؟",en:"What change would you like to see in your community?",emoji:"💡",color:4},{ar:"كيف يتعامل مجتمعك مع كبار السن؟",en:"How does your community treat elderly people?",emoji:"👴",color:5}],medium:[{ar:"دور المرأة في المجتمع الحديث",en:"The role of women in modern society",emoji:"👩",color:1},{ar:"هل التعليم يحل مشاكل المجتمع؟",en:"Can education solve society problems?",emoji:"🏫",color:2},{ar:"الهجرة: أسبابها وتأثيرها",en:"Immigration: causes and impact",emoji:"🌍",color:3},{ar:"ما أهمية التطوع في المجتمع؟",en:"Why is volunteering important in society?",emoji:"🤝",color:4},{ar:"كيف نواجه ظاهرة العنف في المجتمع؟",en:"How do we address violence in society?",emoji:"🛡️",color:5},{ar:"ما دور الشباب في تغيير المجتمع؟",en:"What is youth role in changing society?",emoji:"👦",color:1},{ar:"هل التنوع الثقافي يقوي المجتمعات؟",en:"Does cultural diversity strengthen societies?",emoji:"🌍",color:2},{ar:"كيف يؤثر الدين على القيم الاجتماعية؟",en:"How does religion affect social values?",emoji:"🕌",color:3},{ar:"ما أهمية حقوق الإنسان في المجتمع؟",en:"Why are human rights important in society?",emoji:"📜",color:4},{ar:"كيف تؤثر السياسة على حياتنا اليومية؟",en:"How does politics affect our daily lives?",emoji:"🏛️",color:5}],hard:[{ar:"العدالة الاجتماعية في العالم العربي",en:"Social justice in the Arab world",emoji:"⚖️",color:1},{ar:"الديمقراطية وتحدياتها",en:"Democracy and its challenges",emoji:"🗳️",color:2},{ar:"كيف نواجه خطاب الكراهية؟",en:"How do we combat hate speech?",emoji:"🚫",color:3},{ar:"تأثير الاستعمار على الهوية الثقافية",en:"The impact of colonialism on cultural identity",emoji:"🌍",color:4},{ar:"ما دور المجتمع المدني في التغيير السياسي؟",en:"What is civil society role in political change?",emoji:"🏛️",color:5},{ar:"كيف نحمي حقوق الأقليات؟",en:"How do we protect minority rights?",emoji:"👥",color:1},{ar:"ما أسباب صعود الشعبوية في العالم؟",en:"What causes the rise of populism in the world?",emoji:"📢",color:2},{ar:"ما دور المرأة في السياسة والقيادة؟",en:"What is the role of women in politics and leadership?",emoji:"👩",color:3},{ar:"كيف نواجه الفساد الحكومي؟",en:"How do we tackle government corruption?",emoji:"⚠️",color:4},{ar:"كيف نبني مجتمعاً يحترم حقوق الإنسان؟",en:"How do we build a society that respects human rights?",emoji:"📜",color:5}]}
+};
+const kidsCats = [
+  {cat:'all', label:'🌟 الكل'},
+  {cat:'animals', label:'🐾 حيوانات'},
+  {cat:'family', label:'👨‍👩‍👧 عائلة'},
+  {cat:'school', label:'🏫 مدرسة'},
+  {cat:'food', label:'🍕 أكل'},
+  {cat:'nature', label:'🌿 طبيعة'},
+];
+
+const adultCats = [
+  {cat:'all', label:'🌟 الكل'},
+  {cat:'work', label:'💼 عمل'},
+  {cat:'travel', label:'✈️ سفر'},
+  {cat:'health', label:'🏃 صحة'},
+  {cat:'tech', label:'💻 تقنية'},
+  {cat:'society', label:'🌍 مجتمع'},
+];
+
+let currentMode = 'kids'; // kids or adults
+const adultMascots = ['👨‍💼','👩‍💼','🎓','👨‍🏫','👩‍🏫','🧑‍💻'];
+
+function setMode(mode, el) {
+  currentMode = mode;
+  document.querySelectorAll('.mode-btn').forEach(b=>b.classList.remove('active'));
+  el.classList.add('active');
+  currentCat = 'all';
+  
+  if(mode === 'kids') {
+    document.body.classList.remove('adult-mode');
+    document.getElementById('appSubtitle').textContent = 'تكلّم إنجليزي مع الأطفال';
+    document.getElementById('mascot').textContent = ['🦜','🐸','🦊','🐼','🦋','🐧'][Math.floor(Math.random()*6)];
+    renderCats(kidsCats);
+  } else {
+    document.body.classList.add('adult-mode');
+    document.getElementById('appSubtitle').textContent = 'تحدّث الإنجليزية بثقة';
+    document.getElementById('mascot').textContent = adultMascots[Math.floor(Math.random()*adultMascots.length)];
+    renderCats(adultCats);
+  }
+  // Reset topic card
+  document.getElementById('placeholder').style.display='block';
+  document.getElementById('topicContent').style.display='none';
+  document.getElementById('celebration').style.display='none';
+}
+
+function renderCats(cats) {
+  const row = document.getElementById('catRow');
+  row.innerHTML = '';
+  cats.forEach((c,i) => {
+    const btn = document.createElement('div');
+    btn.className = 'cat-btn' + (i===0?' active':'');
+    btn.setAttribute('data-cat', c.cat);
+    btn.textContent = c.label;
+    btn.onclick = () => setCat(c.cat, btn);
+    row.appendChild(btn);
+  });
+}
+
+function getTopicList() {
+  const topicData = currentMode === 'kids' ? topics : adultTopics;
+  const cat = topicData[currentCat] || topicData['all'];
+  return (cat[currentLevel] && cat[currentLevel].length) ? cat[currentLevel] : topicData['all'][currentLevel];
+}
+function newTopic(){resetTimer();const list=getTopicList();const topic=list[Math.floor(Math.random()*list.length)];document.getElementById('placeholder').style.display='none';const content=document.getElementById('topicContent');content.style.display='block';const emoji=document.getElementById('topicEmoji');emoji.style.animation='none';void emoji.offsetWidth;emoji.style.animation='';document.getElementById('topicEmoji').textContent=topic.emoji;document.getElementById('topicAr').textContent=topic.ar;document.getElementById('topicEn').textContent=topic.en;document.getElementById('topicCard').className='topic-card '+colors[(topic.color-1)%5];document.getElementById('celebration').style.display='none';document.getElementById('mascot').textContent=mascots[Math.floor(Math.random()*mascots.length)];speakText(topic.en);}
+function setTime(s,el){selectedTime=s;timeLeft=s;totalTime=s;document.querySelectorAll('.time-opt').forEach(b=>b.classList.remove('active'));el.classList.add('active');if(!running)updateTimerDisplay();resetTimer();}
+function toggleTimer(){running?pauseTimer():startTimer();}
+function startTimer(){if(timeLeft<=0){timeLeft=selectedTime;totalTime=selectedTime;}running=true;const btn=document.getElementById('startBtn');btn.textContent='⏸ إيقاف';btn.classList.add('running');document.getElementById('celebration').style.display='none';timerInterval=setInterval(()=>{timeLeft--;updateTimerDisplay();if(timeLeft<=0){clearInterval(timerInterval);running=false;btn.textContent='▶ ابدأ الكلام!';btn.classList.remove('running');onTimerDone();}},1000);}
+function pauseTimer(){clearInterval(timerInterval);running=false;const btn=document.getElementById('startBtn');btn.textContent='▶ ابدأ الكلام!';btn.classList.remove('running');}
+function resetTimer(){clearInterval(timerInterval);running=false;timeLeft=selectedTime;totalTime=selectedTime;const btn=document.getElementById('startBtn');btn.textContent='▶ ابدأ الكلام!';btn.classList.remove('running');document.getElementById('celebration').style.display='none';updateTimerDisplay();}
+function onTimerDone(){const earned=currentLevel==='easy'?1:currentLevel==='medium'?2:3;stars+=earned;sessionsToday++;document.getElementById('starsCount').textContent=stars+' ⭐';document.getElementById('sessionsToday').textContent=sessionsToday+' 🎤';document.getElementById('celebration').style.display='block';launchConfetti();}
+function updateTimerDisplay(){const m=Math.floor(timeLeft/60),s=timeLeft%60;const d=document.getElementById('timerDisplay');d.textContent=`${m}:${s.toString().padStart(2,'0')}`;const warn=timeLeft<=10&&timeLeft>0;d.classList.toggle('warn',warn);const arc=document.getElementById('arcFillK');arc.style.strokeDashoffset=226*(1-timeLeft/totalTime);arc.classList.toggle('warn',warn);}
+function launchConfetti(){const wrap=document.getElementById('confettiWrap');wrap.style.display='block';wrap.innerHTML='';const cc=['#FFD93D','#FF6B9D','#6BCB77','#1ec8e0','#A66CFF','#FF9A3C'];for(let i=0;i<40;i++){const p=document.createElement('div');p.className='confetti-piece';p.style.left=Math.random()*100+'%';p.style.top='-20px';p.style.background=cc[Math.floor(Math.random()*cc.length)];p.style.animationDelay=Math.random()*0.5+'s';p.style.animationDuration=(1+Math.random())+'s';wrap.appendChild(p);}setTimeout(()=>{wrap.style.display='none';},2500);}
+// Robust speak function for Android WebView
+function speakText(text){
+  if(!text) return;
+  // Method 1: ResponsiveVoice (if loaded)
+  if(typeof responsiveVoice !== 'undefined' && responsiveVoice.voiceSupport()){
+    responsiveVoice.cancel();
+    responsiveVoice.speak(text, "UK English Female", {rate:0.85, pitch:1, volume:1});
+    return;
+  }
+  // Method 2: Web Speech API with Android WebView fix
+  if('speechSynthesis' in window){
+    window.speechSynthesis.cancel();
+    const trySpeak = () => {
+      const u = new SpeechSynthesisUtterance(text);
+      u.lang = 'en-US';
+      u.rate = 0.85;
+      u.pitch = 1.0;
+      u.volume = 1.0;
+      // Android WebView voice fix
+      const voices = window.speechSynthesis.getVoices();
+      if(voices.length > 0){
+        const engVoice = voices.find(v=>v.lang.startsWith('en-')) || voices[0];
+        if(engVoice) u.voice = engVoice;
+      }
+      window.speechSynthesis.speak(u);
+    };
+    // Android needs a small delay
+    if(window.speechSynthesis.getVoices().length === 0){
+      window.speechSynthesis.onvoiceschanged = trySpeak;
+      setTimeout(trySpeak, 300);
+    } else {
+      setTimeout(trySpeak, 50);
+    }
+  }
+}
+// Pre-load voices on page load
+window.addEventListener('load', ()=>{
+  if('speechSynthesis' in window) window.speechSynthesis.getVoices();
+});
+// Unlock audio on first tap (required by Android WebView)
+let audioUnlocked = false;
+document.addEventListener('touchstart', ()=>{
+  if(!audioUnlocked && 'speechSynthesis' in window){
+    const u = new SpeechSynthesisUtterance('');
+    window.speechSynthesis.speak(u);
+    audioUnlocked = true;
+  }
+}, {once: false});
+
+// RECORDING - 3 states: idle → recording → done
+let recordState = 'idle'; // idle, recording, done
+async function handleRecordBtn(){
+  if(recordState==='idle'){ startRecording(); }
+  else if(recordState==='recording'){ stopRecording(); }
+  else if(recordState==='done'){ playRecording(); }
+}
+async function startRecording(){
+  try{
+    const stream=await navigator.mediaDevices.getUserMedia({audio:true});
+    mediaRecorder=new MediaRecorder(stream);
+    audioChunks=[];
+    mediaRecorder.ondataavailable=e=>audioChunks.push(e.data);
+    mediaRecorder.onstop=()=>{
+      audioBlob=new Blob(audioChunks,{type:'audio/wav'});
+      audioUrl=URL.createObjectURL(audioBlob);
+      recordState='done';
+      document.getElementById('recordBtn').textContent='▶️ اسمع صوتك!';
+      document.getElementById('recordBtn').classList.remove('recording');
+      document.getElementById('recordBtn').style.background='linear-gradient(135deg,var(--purple),#8b5cf6)';
+      document.getElementById('recordStatus').textContent='✅ تم! اضغط مرة ثانية لتسمع صوتك 😊';
+      document.getElementById('recordWave').style.display='none';
+      stream.getTracks().forEach(t=>t.stop());
+      // Auto-start timer after recording stops if topic is selected
+      const topicVisible = document.getElementById('topicContent').style.display !== 'none';
+      if(topicVisible && !running) startTimer();
+    };
+    mediaRecorder.start();
+    recordState='recording';
+    document.getElementById('recordBtn').textContent='⏹️ وقّف التسجيل';
+    document.getElementById('recordBtn').classList.add('recording');
+    document.getElementById('recordBtn').style.background='';
+    document.getElementById('recordStatus').textContent='🔴 جاري التسجيل... تكلّم!';
+    document.getElementById('recordWave').style.display='flex';
+    // Pause timer while recording
+    if(running) pauseTimer();
+  }catch(e){
+    document.getElementById('recordStatus').textContent='❌ يرجى السماح بالوصول للميكروفون في إعدادات التطبيق';
+  }
+}
+function stopRecording(){
+  if(mediaRecorder&&recordState==='recording'){
+    mediaRecorder.stop();
+  }
+}
+function playRecording(){
+  if(audioUrl){
+    const audio=new Audio(audioUrl);
+    audio.play();
+    document.getElementById('recordStatus').textContent='▶️ يتم تشغيل صوتك...';
+    document.getElementById('recordBtn').textContent='🔄 سجّل مرة ثانية';
+    audio.onended=()=>{
+      document.getElementById('recordStatus').textContent='😊 كيف كان صوتك؟ اضغط للتسجيل مجدداً!';
+      document.getElementById('recordBtn').textContent='🎙️ سجّل مجدداً';
+      document.getElementById('recordBtn').style.background='linear-gradient(135deg,var(--pink),#e0507a)';
+      recordState='idle';
+      audioUrl=null;
+    };
+  }
+}
+buildLetters();buildAnimals();updateTimerDisplay();
+</script>
+</body>
+</html>
