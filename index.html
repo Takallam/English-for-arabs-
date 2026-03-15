@@ -492,7 +492,7 @@ function speakText(text) {
         const engVoice = voices.find(v=>v.lang.startsWith('en-')) || voices[0];
         if(engVoice) u.voice = engVoice;
       }
-      window.speechSynthesis.speak(u);
+    setTimeout(()=>window.speechSynthesis.speak(u),200);
     };
     // Android needs a small delay
     if(window.speechSynthesis.getVoices().length === 0){
