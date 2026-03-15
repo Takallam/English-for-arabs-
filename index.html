@@ -476,7 +476,6 @@ function resetTimer(){clearInterval(timerInterval);running=false;timeLeft=select
 function onTimerDone(){const earned=currentLevel==='easy'?1:currentLevel==='medium'?2:3;stars+=earned;sessionsToday++;document.getElementById('starsCount').textContent=stars+' ⭐';document.getElementById('sessionsToday').textContent=sessionsToday+' 🎤';document.getElementById('celebration').style.display='block';launchConfetti();}
 function updateTimerDisplay(){const m=Math.floor(timeLeft/60),s=timeLeft%60;const d=document.getElementById('timerDisplay');d.textContent=`${m}:${s.toString().padStart(2,'0')}`;const warn=timeLeft<=10&&timeLeft>0;d.classList.toggle('warn',warn);const arc=document.getElementById('arcFillK');arc.style.strokeDashoffset=226*(1-timeLeft/totalTime);arc.classList.toggle('warn',warn);}
 function launchConfetti(){const wrap=document.getElementById('confettiWrap');wrap.style.display='block';wrap.innerHTML='';const cc=['#FFD93D','#FF6B9D','#6BCB77','#1ec8e0','#A66CFF','#FF9A3C'];for(let i=0;i<40;i++){const p=document.createElement('div');p.className='confetti-piece';p.style.left=Math.random()*100+'%';p.style.top='-20px';p.style.background=cc[Math.floor(Math.random()*cc.length)];p.style.animationDelay=Math.random()*0.5+'s';p.style.animationDuration=(1+Math.random())+'s';wrap.appendChild(p);}setTimeout(()=>{wrap.style.display='none';},2500);}
-// Robust speak function for Android WebView
   // Method 2: Web Speech API with Android WebView fix
   function speakText(text) {
   if('speechSynthesis' in window){
