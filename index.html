@@ -492,15 +492,7 @@ function speakText(text) {
   utterance.pitch = 1;
 
   window.speechSynthesis.speak(utterance);
-
 }
-  if(!text) return;
-  // Method 1: ResponsiveVoice (if loaded)
-  if(typeof responsiveVoice !== 'undefined' && responsiveVoice.voiceSupport()){
-    responsiveVoice.cancel();
-    responsiveVoice.speak(text, "UK English Female", {rate:0.85, pitch:1, volume:1});
-    return;
-  }
   // Method 2: Web Speech API with Android WebView fix
   function speakText(text) {
   if('speechSynthesis' in window){
